@@ -6,7 +6,7 @@
 ![Python](https://img.shields.io/pypi/pyversions/chatglm-cpp)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-C++ implementation of [ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B), [ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B), [ChatGLM3](https://github.com/THUDM/ChatGLM3) and [GLM-4](https://github.com/THUDM/GLM-4) for real-time chatting on your MacBook.
+C++ implementation of [ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B), [ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B), [ChatGLM3](https://github.com/THUDM/ChatGLM3) and [GLM-4](https://github.com/THUDM/GLM-4)(V) for real-time chatting on your MacBook.
 
 ![demo](docs/demo.gif)
 
@@ -22,7 +22,7 @@ Highlights:
 Support Matrix:
 * Hardwares: x86/arm CPU, NVIDIA GPU, Apple Silicon GPU
 * Platforms: Linux, MacOS, Windows
-* Models: [ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B), [ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B), [ChatGLM3](https://github.com/THUDM/ChatGLM3), [GLM-4](https://github.com/THUDM/GLM-4), [CodeGeeX2](https://github.com/THUDM/CodeGeeX2)
+* Models: [ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B), [ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B), [ChatGLM3](https://github.com/THUDM/ChatGLM3), [GLM-4](https://github.com/THUDM/GLM-4)(V), [CodeGeeX2](https://github.com/THUDM/CodeGeeX2)
 
 ## Getting Started
 
@@ -53,9 +53,9 @@ python3 chatglm_cpp/convert.py -i THUDM/chatglm-6b -t q4_0 -o models/chatglm-ggm
 
 The original model (`-i <model_name_or_path>`) can be a Hugging Face model name or a local path to your pre-downloaded model. Currently supported models are:
 * ChatGLM-6B: `THUDM/chatglm-6b`, `THUDM/chatglm-6b-int8`, `THUDM/chatglm-6b-int4`
-* ChatGLM2-6B: `THUDM/chatglm2-6b`, `THUDM/chatglm2-6b-int4`
-* ChatGLM3-6B: `THUDM/chatglm3-6b`
-* ChatGLM4-9B: `THUDM/glm-4-9b-chat`
+* ChatGLM2-6B: `THUDM/chatglm2-6b`, `THUDM/chatglm2-6b-int4`, `THUDM/chatglm2-6b-32k`, `THUDM/chatglm2-6b-32k-int4`
+* ChatGLM3-6B: `THUDM/chatglm3-6b`, `THUDM/chatglm3-6b-32k`, `THUDM/chatglm3-6b-128k`, `THUDM/chatglm3-6b-base`
+* ChatGLM4(V)-9B: `THUDM/glm-4-9b-chat`, `THUDM/glm-4-9b-chat-1m`, `THUDM/glm-4-9b`, `THUDM/glm-4v-9b`
 * CodeGeeX2: `THUDM/codegeex2-6b`, `THUDM/codegeex2-6b-int4`
 
 You are free to try any of the below quantization types by specifying `-t <type>`:
@@ -184,6 +184,22 @@ Chat mode:
 python3 chatglm_cpp/convert.py -i THUDM/glm-4-9b-chat -t q4_0 -o models/chatglm4-ggml.bin
 ./build/bin/main -m models/chatglm4-ggml.bin -p 你好 --top_p 0.8 --temp 0.8
 # 你好👋！有什么可以帮助你的吗？
+```
+
+</details>
+
+<details open>
+<summary>ChatGLM4V-9B</summary>
+
+[![03-Confusing-Pictures](examples/03-Confusing-Pictures.jpg)](https://www.barnorama.com/wp-content/uploads/2016/12/03-Confusing-Pictures.jpg)
+
+You may use `-vt <vision_type>` to set quantization type for the vision encoder. It is recommended to run GLM4V on GPU since vision encoding runs too slow on CPU even with 4-bit quantization.
+```sh
+python3 chatglm_cpp/convert.py -i THUDM/glm-4v-9b -t q4_0 -vt q4_0 -o models/chatglm4v-ggml.bin
+./build/bin/main -m models/chatglm4v-ggml.bin --image examples/03-Confusing-Pictures.jpg -p "这张图片有什么不寻常之处" --temp 0
+# 这张图片中不寻常的是，一个男人站在一辆黄色SUV的后备箱上，正在使用一个铁板熨烫衣物。
+# 通常情况下，熨衣是在室内进行的，使用的是家用电熨斗，而不是在户外使用汽车后备箱作为工作台。
+# 此外，他似乎是在一个繁忙的城市街道上，周围有行驶的车辆和建筑物，这增加了场景的荒谬性。
 ```
 
 </details>
@@ -361,6 +377,15 @@ python3 cli_demo.py -m ../models/chatglm4-ggml.bin -p 你好 --temp 0.8 --top_p 
 ```
 </details>
 
+<details open>
+<summary>ChatGLM4V-9B</summary>
+
+Chat mode:
+```sh
+python3 cli_demo.py -m ../models/chatglm4v-ggml.bin --image 03-Confusing-Pictures.jpg -p "这张图片有什么不寻常之处" --temp 0
+```
+</details>
+
 <details>
 <summary>CodeGeeX2</summary>
 
@@ -450,12 +475,22 @@ Use the OpenAI client to chat with your model:
 
 For stream response, check out the example client script:
 ```sh
-OPENAI_BASE_URL=http://127.0.0.1:8000/v1 python3 examples/openai_client.py --stream --prompt 你好
+python3 examples/openai_client.py --base_url http://127.0.0.1:8000/v1 --stream --prompt 你好
 ```
 
 Tool calling is also supported:
 ```sh
-OPENAI_BASE_URL=http://127.0.0.1:8000/v1 python3 examples/openai_client.py --tool_call --prompt 上海天气怎么样
+python3 examples/openai_client.py --base_url http://127.0.0.1:8000/v1 --tool_call --prompt 上海天气怎么样
+```
+
+Request GLM4V with image inputs:
+```sh
+# request with local image file
+python3 examples/openai_client.py --base_url http://127.0.0.1:8000/v1 --prompt "描述这张图片" \
+    --image examples/03-Confusing-Pictures.jpg --temp 0
+# request with image url
+python3 examples/openai_client.py --base_url http://127.0.0.1:8000/v1 --prompt "描述这张图片" \
+    --image https://www.barnorama.com/wp-content/uploads/2016/12/03-Confusing-Pictures.jpg --temp 0
 ```
 
 With this API server as backend, ChatGLM.cpp models can be seamlessly integrated into any frontend that uses OpenAI-style API, including [mckaywrigley/chatbot-ui](https://github.com/mckaywrigley/chatbot-ui), [fuergaosi233/wechat-chatgpt](https://github.com/fuergaosi233/wechat-chatgpt), [Yidadaa/ChatGPT-Next-Web](https://github.com/Yidadaa/ChatGPT-Next-Web), and more.
