@@ -999,26 +999,6 @@ class BasicModelForCausalLM : public BaseModelForCausalLM {
 
     void load_prefix_cache(ggml_tensor *past_key_values) { transformer.load_prefix_cache(config, past_key_values); }
 
-  protected:
-    void alloc_weight_context(const ggml_backend_buffer_t sd_buf) const {
-        void *sd_buf_base = ggml_backend_buffer_get_base(sd_buf);
-        const size_t sd_buf_size = ggml_backend_buffer_get_size(sd_buf);
-        if (ggml_backend_is_cpu(mctx_->backend.get())) {
-            mctx_->buf_w = unique_ggml_backend_buffer_t(ggml_backend_cpu_buffer_from_ptr(sd_buf_base, sd_buf_size));
-        }
-#ifdef GGML_USE_METAL
-        else if (ggml_backend_is_metal(mctx_->backend.get())) {
-            const size_t max_size = ggml_get_max_tensor_size(mctx_->ctx_w.get());
-            mctx_->buf_w =
-                unique_ggml_backend_buffer_t(ggml_backend_metal_buffer_from_ptr(sd_buf_base, sd_buf_size, max_size));
-        }
-#endif
-        else {
-            mctx_->buf_w =
-                unique_ggml_backend_buffer_t(ggml_backend_alloc_ctx_tensors(mctx_->ctx_w.get(), mctx_->backend.get()));
-        }
-    }
-
   public:
     Model transformer;
     Linear lm_head;
